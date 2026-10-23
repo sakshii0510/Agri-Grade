@@ -74,8 +74,8 @@ const hindiTranslations = {
   'Please select a JPG, PNG, or WEBP image.': 'कृपया JPG, PNG या WEBP फोटो चुनें।',
   'Image size must not exceed 10 MB.': 'फोटो का आकार 10 MB से अधिक नहीं होना चाहिए।',
   'Could not read the selected image.': 'चुनी हुई फोटो पढ़ी नहीं जा सकी।',
-  'Cannot connect to the backend. Start FastAPI on port 8000 and check the API URL.':
-    'बैकएंड से कनेक्शन नहीं हो सका। FastAPI को पोर्ट 8000 पर चालू करके API URL जाँचें।',
+  'Cannot connect to the backend. Start FastAPI and check the API URL.':
+    'बैकएंड से कनेक्शन नहीं हो सका। FastAPI चालू करके API URL जाँचें।',
   'The backend returned an invalid response. Check the backend terminal.':
     'बैकएंड से गलत जवाब मिला। बैकएंड टर्मिनल जाँचें।',
   'Crop analysis failed. Please try again.': 'फसल का विश्लेषण नहीं हो सका। फिर कोशिश करें।',

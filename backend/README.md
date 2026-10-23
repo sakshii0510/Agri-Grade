@@ -23,11 +23,11 @@ Keep `.env` private; `.env.example` contains placeholders only.
 ## Run
 
 ```powershell
-uvicorn main:app --reload
+uvicorn main:app --reload --port 8001
 ```
 
 ## API Documentation
-http://127.0.0.1:8000/docs
+http://127.0.0.1:8001/docs
 
 ## Endpoints
 - `POST /api/predict` — crop image analysis

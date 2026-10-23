@@ -114,7 +114,7 @@ export default function AnalyzePage({ onAnalysisComplete }) {
         });
       } catch {
         throw new Error(
-          t('Cannot connect to the backend. Start FastAPI on port 8000 and check the API URL.')
+          t('Cannot connect to the backend. Start FastAPI and check the API URL.')
         );
       }
 
