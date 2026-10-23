@@ -11,7 +11,9 @@ import { motion } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
+import AnalyzePage from './pages/AnalyzePage';
 import ResultsPage from './pages/ResultsPage';
+import { LanguageProvider } from './i18n';
 import './index.css';
 
 function RouteEffects() {
@@ -24,19 +26,6 @@ function RouteEffects() {
           .getElementById(
             decodeURIComponent(location.hash.slice(1)),
           )
-          ?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-          });
-      });
-
-      return;
-    }
-
-    if (location.pathname === '/analyze') {
-      requestAnimationFrame(() => {
-        document
-          .getElementById('analyze')
           ?.scrollIntoView({
             behavior: 'smooth',
             block: 'start',
@@ -63,61 +52,51 @@ function AppContent() {
     <>
       <RouteEffects />
 
-      <div className="app-shell">
-        <Navbar />
+      <LanguageProvider>
+        <div className="app-shell">
+          <Navbar />
 
-        <main className="app-main">
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.28,
-              ease: 'easeOut',
-            }}
-          >
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <HomePage
-                    onAnalysisComplete={setAnalysisResult}
-                  />
-                }
-              />
+          <main className="app-main">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.28,
+                ease: 'easeOut',
+              }}
+            >
+              <Routes>
+                <Route
+                  path="/"
+                  element={<HomePage />}
+                />
 
-              <Route
-                path="/analyze"
-                element={
-                  <HomePage
-                    onAnalysisComplete={setAnalysisResult}
-                  />
-                }
-              />
+                <Route
+                  path="/analyze"
+                  element={<AnalyzePage onAnalysisComplete={setAnalysisResult} />}
+                />
 
-              <Route
-                path="/results"
-                element={
-                  <ResultsPage
-                    analysisResult={analysisResult}
-                  />
-                }
-              />
+                <Route
+                  path="/results"
+                  element={
+                    <ResultsPage
+                      analysisResult={analysisResult}
+                    />
+                  }
+                />
 
-              <Route
-                path="*"
-                element={
-                  <HomePage
-                    onAnalysisComplete={setAnalysisResult}
-                  />
-                }
-              />
-            </Routes>
-          </motion.div>
-        </main>
+                <Route
+                  path="*"
+                  element={<HomePage />}
+                />
+              </Routes>
+            </motion.div>
+          </main>
 
-        <Footer />
-      </div>
+          <Footer />
+        </div>
+      </LanguageProvider>
     </>
   );
 }

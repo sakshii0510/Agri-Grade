@@ -91,7 +91,7 @@ class MarketService:
                     }
                     for item in records
                 ],
-                "price_unit": "Check the source dataset for its reported unit.",
+                "price_unit": "INR per quintal.",
                 "source": "Government of India Open Government Data",
             }
 

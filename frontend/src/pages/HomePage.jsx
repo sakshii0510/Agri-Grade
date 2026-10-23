@@ -10,9 +10,9 @@ import {
 } from 'lucide-react';
 
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import AnalyzePage from './AnalyzePage';
+import { Link } from 'react-router-dom';
 import heroBackground from '../assets/HeroSection.png';
+import { useLanguage } from '../languageContext';
 
 const steps = [
   {
@@ -25,7 +25,7 @@ const steps = [
     number: '02',
     title: 'See what to look for',
     description:
-      'Review a sample assessment, possible affected areas, and crop care tips.',
+      'Review the model prediction, available severity details, and crop-care suggestions.',
   },
   {
     number: '03',
@@ -35,21 +35,8 @@ const steps = [
   },
 ];
 
-export default function HomePage({ onAnalysisComplete }) {
-  const navigate = useNavigate();
-
-  const scrollToAnalyze = (event) => {
-    event.preventDefault();
-
-    const section = document.getElementById('analyze');
-
-    if (section) {
-      section.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    }
-  };
+export default function HomePage() {
+  const { t } = useLanguage();
 
   return (
     <div className="home-page">
@@ -67,34 +54,32 @@ export default function HomePage({ onAnalysisComplete }) {
         >
           <div className="eyebrow">
             <Sparkles size={14} />
-            A HEALTHIER HARVEST STARTS HERE
+            {t('A HEALTHIER HARVEST STARTS HERE')}
           </div>
 
           <h1>
-            Where nature meets
+            {t('Where nature meets')}
             <br />
-            <span>healthier harvests.</span>
+            <span>{t('healthier harvests.')}</span>
           </h1>
 
           <p className="hero__intro">
-            Check crop health, learn what to look for, and get
-            practical ideas to help care for your field.
+            {t('Check crop health, learn what to look for, and get practical ideas to help care for your field.')}
           </p>
 
           <div className="hero__actions hero__actions--center">
-            <a
+            <Link
               className="button button--primary"
-              href="#analyze"
-              onClick={scrollToAnalyze}
+              to="/analyze"
             >
-              Check your crop <ArrowRight size={17} />
-            </a>
+              {t('Check your crop')} <ArrowRight size={17} />
+            </Link>
 
             <a
               className="button button--light"
               href="#how-it-works"
             >
-              How it works <ArrowDown size={15} />
+              {t('How it works')} <ArrowDown size={15} />
             </a>
           </div>
         </motion.div>
@@ -102,16 +87,16 @@ export default function HomePage({ onAnalysisComplete }) {
 
       <section
         className="home-highlights"
-        aria-label="AgriGrade highlights"
+        aria-label={t('AgriGrade highlights')}
       >
         <div className="page-shell home-highlights__inner">
           <div className="home-highlights__statement">
             <p>
-              We're here to make crop health checks{' '}
+              {t("We're here to make crop health checks")}{' '}
               <strong>
-                clearer, calmer, and more useful
+                {t('clearer, calmer, and more useful')}
               </strong>{' '}
-              for every grower.
+              {t('for every grower.')}
             </p>
           </div>
 
@@ -119,30 +104,24 @@ export default function HomePage({ onAnalysisComplete }) {
             <div>
               <strong>
                 <ShieldCheck size={19} />
-                Practical guidance
+                {t('Practical guidance')}
               </strong>
               <span>
-                Simple steps for your next field check
+                {t('Simple steps for your next field check')}
               </span>
             </div>
 
             <div>
               <strong>
                 <ScanLine size={19} />
-                Photo-first checks
+                {t('Photo-first checks')}
               </strong>
               <span>
-                Start with a crop photo, right here
+                {t('Start with a crop photo, right here')}
               </span>
             </div>
           </div>
         </div>
-      </section>
-
-      <section id="analyze">
-        <AnalyzePage
-          onAnalysisComplete={onAnalysisComplete}
-        />
       </section>
 
       <section
@@ -153,16 +132,15 @@ export default function HomePage({ onAnalysisComplete }) {
           <div className="section-heading">
             <span className="eyebrow">
               <Leaf size={14} />
-              SIMPLE STEPS, USEFUL INSIGHTS
+              {t('SIMPLE STEPS, USEFUL INSIGHTS')}
             </span>
 
             <h2>
-              From a field photo to a clearer next step.
+              {t('From a field photo to a clearer next step.')}
             </h2>
 
             <p>
-              Easy to follow, with no complicated reports or
-              hard-to-read charts.
+              {t('Easy to follow, with no complicated reports or hard-to-read charts.')}
             </p>
           </div>
 
@@ -177,20 +155,19 @@ export default function HomePage({ onAnalysisComplete }) {
                     {number}
                   </span>
 
-                  <h3>{title}</h3>
-                  <p>{description}</p>
+                  <h3>{t(title)}</h3>
+                  <p>{t(description)}</p>
                 </article>
               ),
             )}
           </div>
 
-          <a
+          <Link
             className="button button--outline"
-            href="#analyze"
-            onClick={scrollToAnalyze}
+            to="/analyze"
           >
-            Check a crop <ArrowUpRight size={16} />
-          </a>
+            {t('Check a crop')} <ArrowUpRight size={16} />
+          </Link>
         </div>
       </section>
     </div>

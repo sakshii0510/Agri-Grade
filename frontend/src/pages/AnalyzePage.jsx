@@ -1,16 +1,31 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  ArrowRight,
+  Check,
+  ImagePlus,
+  LoaderCircle,
+  ScanLine,
+  ShieldCheck,
+  UploadCloud,
+  X,
+} from 'lucide-react';
+import { useLanguage } from '../languageContext';
 
-const API_URL = 'http://127.0.0.1:8000/api/predict';
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
+const API_URL = `${API_BASE_URL}/api/predict`;
 
 export default function AnalyzePage({ onAnalysisComplete }) {
   const navigate = useNavigate();
+  const { t } = useLanguage();
+  const fileInputRef = useRef(null);
 
   const [image, setImage] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -26,16 +41,13 @@ export default function AnalyzePage({ onAnalysisComplete }) {
 
       reader.onload = () => resolve(reader.result);
       reader.onerror = () =>
-        reject(new Error('Could not read the selected image.'));
+        reject(        new Error(t('Could not read the selected image.')));
 
       reader.readAsDataURL(file);
     });
 
-  const selectFile = (event) => {
-    const file = event.target.files?.[0];
-
+  const selectFile = (file) => {
     if (!file) return;
-
     setError('');
 
     const allowedTypes = [
@@ -45,14 +57,12 @@ export default function AnalyzePage({ onAnalysisComplete }) {
     ];
 
     if (!allowedTypes.includes(file.type)) {
-      setError('Please select a JPG, PNG, or WEBP image.');
-      event.target.value = '';
+      setError(t('Please select a JPG, PNG, or WEBP image.'));
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      setError('Image size must not exceed 10 MB.');
-      event.target.value = '';
+      setError(t('Image size must not exceed 10 MB.'));
       return;
     }
 
@@ -66,6 +76,20 @@ export default function AnalyzePage({ onAnalysisComplete }) {
   const clearImage = () => {
     setImage(null);
     setError('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleFileInput = (event) => {
+    selectFile(event.target.files?.[0]);
+    event.target.value = '';
+  };
+
+  const handleDrop = (event) => {
+    event.preventDefault();
+    setIsDragging(false);
+    selectFile(event.dataTransfer.files?.[0]);
   };
 
   const analyze = async () => {
@@ -90,7 +114,7 @@ export default function AnalyzePage({ onAnalysisComplete }) {
         });
       } catch {
         throw new Error(
-          'Cannot connect to the backend. Start FastAPI on port 8000 and check the API URL.'
+          t('Cannot connect to the backend. Start FastAPI on port 8000 and check the API URL.')
         );
       }
 
@@ -102,7 +126,7 @@ export default function AnalyzePage({ onAnalysisComplete }) {
         data = await response.json();
       } catch {
         throw new Error(
-          'The backend returned an invalid response. Check the backend terminal.'
+          t('The backend returned an invalid response. Check the backend terminal.')
         );
       }
 
@@ -110,9 +134,9 @@ export default function AnalyzePage({ onAnalysisComplete }) {
         const detail =
           typeof data.detail === 'string'
             ? data.detail
-            : 'Crop analysis failed. Please try again.';
+            : t('Crop analysis failed. Please try again.');
 
-        throw new Error(detail);
+        throw new Error(t(detail));
       }
 
       if (
@@ -121,7 +145,7 @@ export default function AnalyzePage({ onAnalysisComplete }) {
         !data.class_name.includes('___')
       ) {
         throw new Error(
-          'The AI model did not return a valid crop prediction.'
+          t('The AI model did not return a valid crop prediction.')
         );
       }
 
@@ -195,7 +219,6 @@ export default function AnalyzePage({ onAnalysisComplete }) {
           : [];
 
       const result = {
-        isMock: false,
         cropName,
         diseaseName: isHealthy ? 'Healthy' : diseaseName,
         scientificName: '',
@@ -206,7 +229,7 @@ export default function AnalyzePage({ onAnalysisComplete }) {
           data.severity?.basis ||
           data.severity?.description ||
           data.advisory?.notice ||
-          'This is a preliminary model prediction, not a confirmed field diagnosis.',
+          t('This is a preliminary model prediction, not a confirmed field diagnosis.'),
         symptoms,
         treatmentRecommendations: [
           {
@@ -222,7 +245,6 @@ export default function AnalyzePage({ onAnalysisComplete }) {
         imageDataUrl,
         fileName: image.fileName,
         rawPrediction: data,
-        isDemo: false,
       };
 
       setProgress(100);
@@ -240,7 +262,7 @@ export default function AnalyzePage({ onAnalysisComplete }) {
       setError(
         analysisError instanceof Error
           ? analysisError.message
-          : 'Unable to analyze the crop image.'
+          : t('Unable to analyze the crop image.')
       );
     } finally {
       setAnalyzing(false);
@@ -249,88 +271,124 @@ export default function AnalyzePage({ onAnalysisComplete }) {
   };
 
   return (
-    <main className="analyze-page">
-      <section className="analyze-container">
-        <h1>Analyze Your Crop</h1>
+    <main className="analyze-section">
+      <div className="analyze-layout">
+          <div className="analyze-copy">
+            <span className="eyebrow">
+              <ScanLine size={15} />               {t('YOUR CROP CHECK')}
+            </span>
 
-        <p>
-          Upload a clear image of a crop leaf to get an AI-based
-          disease prediction and crop-care recommendations.
-        </p>
+            <h1>{t('A closer look starts with one photo.')}</h1>
 
-        <div className="upload-card">
-          {image ? (
-            <div className="image-preview">
-              <img
-                src={image.preview}
-                alt="Selected crop leaf"
-                className="preview-image"
-              />
-
-              <p>{image.fileName}</p>
-
-              <button
-                type="button"
-                onClick={clearImage}
-                disabled={analyzing}
-              >
-                Remove image
-              </button>
-            </div>
-          ) : (
-            <label className="upload-area">
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={selectFile}
-                disabled={analyzing}
-                hidden
-              />
-
-              <span className="upload-icon" aria-hidden="true">
-                📷
-              </span>
-
-              <strong>Choose a crop-leaf image</strong>
-
-              <span>
-                Click to browse JPG, PNG, or WEBP files
-              </span>
-
-              <span>Maximum file size: 10 MB</span>
-            </label>
-          )}
-
-          {error && (
-            <p className="error-message" role="alert">
-              {error}
+            <p>
+              {t('Upload a clear crop photo to get an AI-powered health assessment and practical care suggestions.')}
             </p>
-          )}
 
-          {analyzing && (
-            <div className="progress-container">
-              <p>Analyzing your crop image...</p>
+            <ul className="analyze-benefits">
+              <li><Check size={17} /> {t('Clear, step-by-step results')}</li>
+              <li><Check size={17} /> {t('Crop health and severity overview')}</li>
+              <li><Check size={17} /> {t('Actionable care suggestions')}</li>
+            </ul>
+          </div>
 
-              <progress
-                value={progress}
-                max="100"
-                aria-label="Analysis progress"
-              />
-
-              <span>{progress}%</span>
+          <div className="upload-card">
+            <div className="upload-card__head">
+              <span className="upload-card__icon">
+                <ImagePlus size={21} />
+              </span>
+              <div>
+                <h2>{t('Upload crop photo')}</h2>
+                <p>{t('JPG, PNG or WebP · up to 10 MB')}</p>
+              </div>
             </div>
-          )}
 
-          <button
-            type="button"
-            onClick={analyze}
-            disabled={!image || analyzing}
-            className="analyze-button"
-          >
-            {analyzing ? 'Analyzing...' : 'Analyze Crop'}
-          </button>
-        </div>
-      </section>
+            {image ? (
+              <div className="image-preview">
+                <img src={image.preview}                 alt={t('Selected crop leaf')} />
+                <span className="image-preview__label">
+                  {image.fileName}
+                </span>
+                <button
+                  type="button"
+                  className="image-preview__remove"
+                  onClick={clearImage}
+                  disabled={analyzing}
+                  aria-label={t('Remove selected image')}
+                >
+                  <X size={17} />
+                </button>
+              </div>
+            ) : (
+              <label
+                className={`upload-drop${isDragging ? ' upload-drop--active' : ''}`}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  setIsDragging(true);
+                }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={handleDrop}
+              >
+                <input
+                  ref={fileInputRef}
+                  className="visually-hidden"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleFileInput}
+                  disabled={analyzing}
+                  aria-label={t('Choose a crop photo')}
+                />
+
+                <span className="upload-drop__icon" aria-hidden="true">
+                  <UploadCloud size={26} />
+                </span>
+                <strong>{t('Drag a photo here')}</strong>
+                <span>
+                  {t('or ')}<span className="upload-drop__browse">{t('browse files')}</span>{t(' on your device')}
+                </span>
+                <small>{t('For best results, use a well-lit close-up photo')}</small>
+              </label>
+            )}
+
+            {error && (
+              <p className="form-error" role="alert">{error}</p>
+            )}
+
+            {analyzing && (
+              <div className="analysis-progress" aria-live="polite">
+                <div className="analysis-progress__label">
+                  <LoaderCircle className="spin" size={16} />
+                  {t('Analyzing your crop')}
+                  <span>{progress}%</span>
+                </div>
+                <div
+                  className="analysis-progress__track"
+                  role="progressbar"
+                  aria-label={t('Analysis progress')}
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-valuenow={progress}
+                >
+                  <span style={{ width: `${progress}%` }} />
+                </div>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={analyze}
+              disabled={!image || analyzing}
+              className="button button--primary upload-submit"
+            >
+              {analyzing ? t('Analyzing crop...') : t('Analyze crop')}
+              {!analyzing && <ArrowRight size={17} />}
+            </button>
+
+            <p className="upload-privacy">
+              <ShieldCheck size={15} />
+              {t('Your photo is analyzed by the AgriGrade crop health service.')}
+            </p>
+          </div>
+      </div>
     </main>
   );
 }
